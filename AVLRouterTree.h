@@ -32,7 +32,6 @@ private:
         return n ? getHeight(n->left) - getHeight(n->right) : 0;
     }
 
-    // ROTACAO PARA A DIREITA
     Node* rotateRight(Node* y) {
         rotations++;
 
@@ -48,7 +47,6 @@ private:
         return x;
     }
 
-    // ROTACAO PARA A ESQUERDA
     Node* rotateLeft(Node* x) {
         rotations++;
 
@@ -62,6 +60,16 @@ private:
         updateHeight(y);
 
         return y;
+    }
+
+    Node* search(Node* node, int id) {
+        if (node == nullptr || node->rule.id == id)
+            return node;
+
+        if (id < node->rule.id)
+            return search(node->left, id);
+
+        return search(node->right, id);
     }
 
     Node* insert(Node* node, PacketRule rule) {
@@ -78,21 +86,17 @@ private:
 
         int balance = getBalance(node);
 
-        // Caso esquerda-esquerda
         if (balance > 1 && rule.id < node->left->rule.id)
             return rotateRight(node);
 
-        // Caso direita-direita
         if (balance < -1 && rule.id > node->right->rule.id)
             return rotateLeft(node);
 
-        // Caso esquerda-direita
         if (balance > 1 && rule.id > node->left->rule.id) {
             node->left = rotateLeft(node->left);
             return rotateRight(node);
         }
 
-        // Caso direita-esquerda
         if (balance < -1 && rule.id < node->right->rule.id) {
             node->right = rotateRight(node->right);
             return rotateLeft(node);
@@ -107,7 +111,12 @@ public:
     }
 
     PacketRule* search(int id) {
-        return nullptr;
+        Node* result = search(root, id);
+
+        if (result == nullptr)
+            return nullptr;
+
+        return &result->rule;
     }
 
     int getRotations() {
