@@ -2,7 +2,7 @@
 #define AVLROUTERTREE_H
 
 #include "PacketRule.h"
-#include <algorithm> 
+#include <algorithm>
 using namespace std;
 
 class AVLRouterTree {
@@ -20,7 +20,50 @@ private:
     Node* root = nullptr;
     int rotations = 0;
 
-    // 🔹 INSERT INTERNO (recursivo)
+    int getHeight(Node* n) {
+        return n ? n->height : 0;
+    }
+
+    void updateHeight(Node* n) {
+        n->height = 1 + max(getHeight(n->left), getHeight(n->right));
+    }
+
+    int getBalance(Node* n) {
+        return n ? getHeight(n->left) - getHeight(n->right) : 0;
+    }
+
+    // ROTACAO PARA A DIREITA
+    Node* rotateRight(Node* y) {
+        rotations++;
+
+        Node* x = y->left;
+        Node* temp = x->right;
+
+        x->right = y;
+        y->left = temp;
+
+        updateHeight(y);
+        updateHeight(x);
+
+        return x;
+    }
+
+    // ROTACAO PARA A ESQUERDA
+    Node* rotateLeft(Node* x) {
+        rotations++;
+
+        Node* y = x->right;
+        Node* temp = y->left;
+
+        y->left = x;
+        x->right = temp;
+
+        updateHeight(x);
+        updateHeight(y);
+
+        return y;
+    }
+
     Node* insert(Node* node, PacketRule rule) {
         if (!node) return new Node(rule);
 
@@ -28,32 +71,41 @@ private:
             node->left = insert(node->left, rule);
         else if (rule.id > node->rule.id)
             node->right = insert(node->right, rule);
+        else
+            return node;
+
+        updateHeight(node);
+
+        int balance = getBalance(node);
+
+        // Caso esquerda-esquerda
+        if (balance > 1 && rule.id < node->left->rule.id)
+            return rotateRight(node);
+
+        // Caso direita-direita
+        if (balance < -1 && rule.id > node->right->rule.id)
+            return rotateLeft(node);
+
+        // Caso esquerda-direita
+        if (balance > 1 && rule.id > node->left->rule.id) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+
+        // Caso direita-esquerda
+        if (balance < -1 && rule.id < node->right->rule.id) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
 
         return node;
     }
 
-    // 🔹 ALTURA
-    int getHeight(Node* n) {
-        return n ? n->height : 0;
-    }
-
-    // 🔹 ATUALIZA ALTURA
-    void updateHeight(Node* n) {
-        n->height = 1 + max(getHeight(n->left), getHeight(n->right));
-    }
-
-    // 🔹 FATOR DE BALANCEAMENTO
-    int getBalance(Node* n) {
-        return getHeight(n->left) - getHeight(n->right);
-    }
-
 public:
-    // 🔹 INSERT PÚBLICO
     void insert(PacketRule rule) {
         root = insert(root, rule);
     }
 
-    // 🔹 SEARCH (ainda simples)
     PacketRule* search(int id) {
         return nullptr;
     }
