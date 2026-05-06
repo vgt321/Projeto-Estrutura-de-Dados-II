@@ -72,6 +72,15 @@ private:
         return search(node->right, id);
     }
 
+    Node* getMinValueNode(Node* node) {
+        Node* current = node;
+
+        while (current->left != nullptr)
+            current = current->left;
+
+        return current;
+    }
+
     Node* insert(Node* node, PacketRule rule) {
         if (!node) return new Node(rule);
 
@@ -105,9 +114,69 @@ private:
         return node;
     }
 
+    Node* deleteNode(Node* node, int id) {
+        if (node == nullptr)
+            return node;
+
+        if (id < node->rule.id) {
+            node->left = deleteNode(node->left, id);
+        } 
+        else if (id > node->rule.id) {
+            node->right = deleteNode(node->right, id);
+        } 
+        else {
+            if (node->left == nullptr || node->right == nullptr) {
+                Node* temp = node->left ? node->left : node->right;
+
+                if (temp == nullptr) {
+                    temp = node;
+                    node = nullptr;
+                } else {
+                    *node = *temp;
+                }
+
+                delete temp;
+            } 
+            else {
+                Node* temp = getMinValueNode(node->right);
+                node->rule = temp->rule;
+                node->right = deleteNode(node->right, temp->rule.id);
+            }
+        }
+
+        if (node == nullptr)
+            return node;
+
+        updateHeight(node);
+
+        int balance = getBalance(node);
+
+        if (balance > 1 && getBalance(node->left) >= 0)
+            return rotateRight(node);
+
+        if (balance > 1 && getBalance(node->left) < 0) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+
+        if (balance < -1 && getBalance(node->right) <= 0)
+            return rotateLeft(node);
+
+        if (balance < -1 && getBalance(node->right) > 0) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
 public:
     void insert(PacketRule rule) {
         root = insert(root, rule);
+    }
+
+    void deleteRule(int id) {
+        root = deleteNode(root, id);
     }
 
     PacketRule* search(int id) {
