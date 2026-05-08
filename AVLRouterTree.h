@@ -169,6 +169,17 @@ private:
 
         return node;
     }
+        bool validateAVL(Node* node) {
+        if (node == nullptr)
+            return true;
+
+        int balance = getBalance(node);
+
+        if (balance < -1 || balance > 1)
+            return false;
+
+        return validateAVL(node->left) && validateAVL(node->right);
+    }
 
 public:
     void insert(PacketRule rule) {
@@ -190,6 +201,10 @@ public:
 
     int getRotations() {
         return rotations;
+    }
+    
+        bool validateAVL() {
+        return validateAVL(root);
     }
 };
 
