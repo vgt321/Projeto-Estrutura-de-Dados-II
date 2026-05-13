@@ -202,9 +202,13 @@ public:
     int getRotations() {
         return rotations;
     }
-    
-        bool validateAVL() {
+
+    bool validateAVL() {
         return validateAVL(root);
+    }
+
+    int height() {
+        return getHeight(root);
     }
 };
 
